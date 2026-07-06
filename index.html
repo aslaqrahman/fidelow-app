@@ -674,9 +674,10 @@
                 Be among the first to experience Fidelow. Secure your spot on the waitlist to get early access and lifetime founder perks.
             </p>
             
-            <form class="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto" onsubmit="event.preventDefault(); alert('Thanks for joining the waitlist! (Demo)');">
+            <form name="waitlist" method="POST" data-netlify="true" class="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto">
                 <input 
                     type="email" 
+                    name="email"
                     placeholder="name@company.com" 
                     required
                     class="w-full flex-1 bg-paper border border-stone/30 text-ink rounded-md px-4 py-3 focus:outline-none focus:border-green focus:ring-1 focus:ring-green transition-all"
