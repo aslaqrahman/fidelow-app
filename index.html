@@ -674,7 +674,8 @@
                 Be among the first to experience Fidelow. Secure your spot on the waitlist to get early access and lifetime founder perks.
             </p>
             
-            <form name="waitlist" method="POST" data-netlify="true" class="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto">
+            <!-- Netlify Form -->
+            <form id="waitlist-form" name="waitlist" method="POST" netlify class="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto transition-opacity duration-300">
                 <input 
                     type="email" 
                     name="email"
@@ -682,11 +683,21 @@
                     required
                     class="w-full flex-1 bg-paper border border-stone/30 text-ink rounded-md px-4 py-3 focus:outline-none focus:border-green focus:ring-1 focus:ring-green transition-all"
                 >
-                <button type="submit" class="w-full sm:w-auto btn-gradient text-white font-medium px-6 py-3 rounded-md shadow-sm whitespace-nowrap">
+                <button type="submit" id="waitlist-submit-btn" class="w-full sm:w-auto btn-gradient text-white font-medium px-6 py-3 rounded-md shadow-sm whitespace-nowrap">
                     Join Waitlist
                 </button>
             </form>
-            <p class="mt-4 text-xs text-stone">No spam. Unsubscribe anytime.</p>
+
+            <!-- Success Message (Hidden by default) -->
+            <div id="waitlist-success" class="hidden flex-col items-center justify-center gap-3 w-full max-w-md mx-auto opacity-0 transition-opacity duration-500">
+                <div class="w-12 h-12 rounded-full bg-green/10 text-green flex items-center justify-center mb-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h3 class="font-serif text-xl sm:text-2xl text-ink">You're on the list!</h3>
+                <p class="text-sm text-ink/70">We'll reach out as soon as your spot opens up.</p>
+            </div>
+            
+            <p id="waitlist-disclaimer" class="mt-4 text-xs text-stone transition-opacity duration-300">No spam. Unsubscribe anytime.</p>
         </div>
     </section>
 
@@ -812,6 +823,62 @@
                 
                 panel.style.opacity = '1';
             }, 150);
+        }
+
+        // Netlify Form AJAX Submission with Success State
+        const waitlistForm = document.getElementById('waitlist-form');
+        const waitlistSuccess = document.getElementById('waitlist-success');
+        const waitlistDisclaimer = document.getElementById('waitlist-disclaimer');
+        const submitBtn = document.getElementById('waitlist-submit-btn');
+
+        if (waitlistForm) {
+            waitlistForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Prevent standard page reload
+                
+                // Show a brief loading state on the button
+                const originalBtnText = submitBtn.innerText;
+                submitBtn.innerText = 'Joining...';
+                submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
+                submitBtn.disabled = true;
+                
+                const formData = new FormData(waitlistForm);
+                // Required for Netlify to properly map the background AJAX request
+                formData.append("form-name", "waitlist"); 
+                
+                fetch('/', {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams(formData).toString()
+                })
+                .then(() => {
+                    // 1. Fade out the form and disclaimer text
+                    waitlistForm.style.opacity = '0';
+                    waitlistDisclaimer.style.opacity = '0';
+                    
+                    // 2. Wait for fade out to finish, then swap visibility
+                    setTimeout(() => {
+                        waitlistForm.classList.add('hidden');
+                        waitlistForm.classList.remove('flex');
+                        waitlistDisclaimer.classList.add('hidden');
+                        
+                        waitlistSuccess.classList.remove('hidden');
+                        waitlistSuccess.classList.add('flex');
+                        
+                        // 3. Fade in the success message
+                        setTimeout(() => {
+                            waitlistSuccess.style.opacity = '1';
+                        }, 50);
+                    }, 300);
+                })
+                .catch((error) => {
+                    console.error('Form submission error:', error);
+                    // Revert button if submission failed
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    submitBtn.disabled = false;
+                    alert('There was a problem saving your email. Please try again.');
+                });
+            });
         }
     </script>
 </body>
